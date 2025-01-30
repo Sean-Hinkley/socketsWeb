@@ -7,10 +7,11 @@ const app = express();
 const server = http.createServer(app);
 app.set('view engine', 'ejs');
 
-
 app.get('/', (req,res) => {
     res.render('index');
+    
 });
+
 
 const io = new Server(server);
 
