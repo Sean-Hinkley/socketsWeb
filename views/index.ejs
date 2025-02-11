@@ -15,7 +15,7 @@
           </button>
           <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
             <div class="navbar-nav">
-              <a class="nav-link active" aria-current="page" href="index.ejs">Chat</a>
+              <a class="nav-link active" aria-current="page" href="/">Chat</a>
             </div>
           </div>
         </div>
@@ -37,14 +37,21 @@
         </form>
     </div>
     
-    
+    <form id="roomForm">
+        <input id="roomName" autocomplete="off">
+        <button>Create Room</button>
+    </form>
     
     <h1>Chat</h1><hr><hr>
-    <tr></tr>
-    <ul id="messages"></ul>
-    <form id="form" action="">
-        <input id="input" autocomplete="off" /><button>Send</button>
+    
+    <form id="messageRoom">
+        <input id="messageRoomMessage" autocomplete="off" />
+        <button>Send</button>
     </form>
+
+    <ul id="messages">
+
+    </ul>
 
 
 
@@ -55,26 +62,26 @@
     <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
     <script>
         const socket = io();
-        const form = document.querySelector('#form');
-        const input = document.querySelector('#input');
-        const messages = document.querySelector('#messages');
-
-        form.addEventListener('submit', (e) => {
+        const mroom = document.getElementById('messageRoom');
+        mroom.addEventListener('submit', (e) => {
             e.preventDefault();
-            if(input.value) {
-                socket.emit('chat message', input.value);
+            const input = document.getElementById('messageRoomMessage');
+            const message = input.value.trim();
+            if(message !== '') {
+                socket.emit('messageRoom', {user: socket.username, message: message})
                 input.value = '';
             }
-        });
+        })
 
-        socket.on('chat message', (data) => {
-            const item = document.createElement('li');
-            item.textContent = `${data.user} said ${data.message}`;
-            messages.appendChild(item);
-        });
-    </script>
+        socket.on('roomMessage', (data) => {
+            const messages = document.getElementById('messages');
+            const li = document.createElement('li');
+            li.textContent = `${data.user}: ${data.message}`;
+            messages.appendChild(li);
+        })
 
-    <script>
+
+
         let usernameform = document.querySelector('#userNameForm');
         usernameform.addEventListener('submit', (event) => {
             event.preventDefault();
@@ -85,7 +92,29 @@
                 inputname.value = '';
             }
         })
+
+
+        document.getElementById("roomForm").addEventListener('submit', (e) => {
+            e.preventDefault();
+            const input = document.getElementById("roomName");
+            const roomName = input.value.trim();
+            if(roomName !== '') {
+                socket.emit('createRoom', {user: socket.username, room: roomName})
+                input.value = '';
+            }
+        });
+
+        socket.on('roomCreated', (data) => {
+            const messages = document.getElementById('messages');
+            const li = document.createElement('li');
+            li.textContent = `${data.user}: created and joined ${data.room}`;
+            messages.appendChild(li);
+        });
+
+
+
     </script>
+
 
 </body>
 </html>
